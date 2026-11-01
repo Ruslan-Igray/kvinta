@@ -47,3 +47,13 @@ jobs:
       - name: Publish site
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify public application
+        env:
+          PAGES_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          curl --fail --location --retry 6 --retry-delay 10 --retry-all-errors "$PAGES_URL" -o "$RUNNER_TEMP/kvinta-live.html"
+          grep -q 'Квинта' "$RUNNER_TEMP/kvinta-live.html"
+          curl --fail --location --retry 6 --retry-delay 10 --retry-all-errors "${PAGES_URL}app.js" -o "$RUNNER_TEMP/kvinta-live.js"
+          grep -q 'createChordLibrary' "$RUNNER_TEMP/kvinta-live.js"
+          curl --fail --location "${PAGES_URL}manifest.webmanifest" -o "$RUNNER_TEMP/kvinta-manifest.json"
+          curl --fail --location "${PAGES_URL}sw.js" -o "$RUNNER_TEMP/kvinta-live-sw.js"
